@@ -144,66 +144,67 @@
   </div>
 
   <!-- Include Signature Pad Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/2.3.2/signature_pad.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
 
   <script>
-    // Check if the SignaturePad script is loaded
-    if (typeof SignaturePad === 'undefined') {
-      console.error("SignaturePad library is not loaded.");
-    } else {
-      console.log("SignaturePad library loaded successfully.");
-    }
+    // Wait for the page to load before initializing the signature pad
+    window.addEventListener('load', function() {
+      // Ensure SignaturePad is loaded properly
+      if (typeof SignaturePad === 'undefined') {
+        console.error("SignaturePad library is not loaded.");
+      } else {
+        // Initialize the SignaturePad when the page is fully loaded
+        var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
-    // Initialize Signature Pad
-    var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
-
-    // Clear Signature Button
-    document.getElementById('clearSignature').addEventListener('click', function() {
-      signaturePad.clear();
-    });
-
-    // Submit the proof (photo and signature) to Google Apps Script
-    function submitProof() {
-      var trackingNumber = document.getElementById('trackingNumber').value;
-      var postcode = document.getElementById('postcode').value;
-
-      // Get the signature as a base64 string
-      var signatureData = signaturePad.toDataURL();
-
-      // Get the delivery photo file
-      var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
-      var reader = new FileReader();
-
-      reader.onloadend = function () {
-        var deliveryPhotoData = reader.result;
-
-        // Send the data to Google Apps Script via POST
-        var formData = new FormData();
-        formData.append('trackingNumber', trackingNumber);
-        formData.append('postcode', postcode);
-        formData.append('signature', signatureData);  // Base64 string
-        formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 string
-
-        // Replace with your actual Google Apps Script URL
-        var scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
-
-        fetch(scriptUrl, {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Proof submitted successfully:', data);
-          alert('Proof submitted successfully!');
-        })
-        .catch(error => {
-          console.error('Error submitting proof:', error);
-          alert('Error submitting proof.');
+        // Clear Signature Button
+        document.getElementById('clearSignature').addEventListener('click', function() {
+          signaturePad.clear();
         });
-      };
 
-      reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
-    }
+        // Submit the proof (photo and signature) to Google Apps Script
+        function submitProof() {
+          var trackingNumber = document.getElementById('trackingNumber').value;
+          var postcode = document.getElementById('postcode').value;
+
+          // Get the signature as a base64 string
+          var signatureData = signaturePad.toDataURL();
+
+          // Get the delivery photo file
+          var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
+          var reader = new FileReader();
+
+          reader.onloadend = function () {
+            var deliveryPhotoData = reader.result;
+
+            // Send the data to Google Apps Script via POST
+            var formData = new FormData();
+            formData.append('trackingNumber', trackingNumber);
+            formData.append('postcode', postcode);
+            formData.append('signature', signatureData);  // Base64 string
+            formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 string
+
+            // Replace with your actual Google Apps Script URL
+            var scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
+
+            fetch(scriptUrl, {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Proof submitted successfully:', data);
+              alert('Proof submitted successfully!');
+            })
+            .catch(error => {
+              console.error('Error submitting proof:', error);
+              alert('Error submitting proof.');
+            });
+          };
+
+          reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
+        }
+      }
+    });
   </script>
 </body>
 </html>
