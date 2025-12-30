@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delivery Proof Capture</title>
+  <title>Proof of Delivery</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     /* Base Styling */
@@ -124,7 +124,7 @@
   <div class="form-container">
     <h2>Delivery Proof Capture</h2>
 
-    <form id="proofForm">
+    <form id="proofForm" onsubmit="event.preventDefault(); submitProof();">
       <label for="trackingNumber">Tracking Number:</label>
       <input type="text" id="trackingNumber" placeholder="Enter Tracking Number" required />
 
@@ -143,76 +143,59 @@
     </form>
   </div>
 
-  <!-- Include Signature Pad Library -->
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/2.3.2/signature_pad.umd.min.js"></script>
 
   <script>
-    // Ensure that the entire page is loaded before proceeding
-    window.addEventListener('load', function() {
-      // Initialize the signature pad
-      const canvas = document.getElementById('signaturePad');
-      const signaturePad = new SignaturePad(canvas);
+    // Initialize Signature Pad
+    var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
-      // Clear Signature Button
-      document.getElementById('clearSignature').addEventListener('click', function() {
-        signaturePad.clear();
-      });
-
-      // Bind the submit event to the form
-      const form = document.getElementById('proofForm');
-      form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        // Debugging: Ensure this event handler is working
-        console.log('Form submission triggered');
-
-        // Collect the form data
-        const trackingNumber = document.getElementById('trackingNumber').value;
-        const postcode = document.getElementById('postcode').value;
-
-        // Get the signature as a base64 string
-        const signatureData = signaturePad.toDataURL();
-        console.log('Signature data captured:', signatureData);
-
-        // Get the delivery photo file
-        const deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
-        const reader = new FileReader();
-
-        reader.onloadend = function () {
-          const deliveryPhotoData = reader.result;
-          console.log('Delivery photo data captured:', deliveryPhotoData);
-
-          // Prepare the data for sending to the server
-          const formData = new FormData();
-          formData.append('trackingNumber', trackingNumber);
-          formData.append('postcode', postcode);
-          formData.append('signature', signatureData);  // Base64 signature string
-          formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 image string
-
-          // Replace with your actual Google Apps Script URL
-          const scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
-          console.log('Sending data to Google Apps Script...');
-
-          // Send the data to the backend
-          fetch(scriptUrl, {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('Proof submitted successfully:', data);
-            alert('Proof submitted successfully!');
-          })
-          .catch(error => {
-            console.error('Error submitting proof:', error);
-            alert('Error submitting proof.');
-          });
-        };
-
-        reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
-      });
+    // Clear Signature Button
+    document.getElementById('clearSignature').addEventListener('click', function() {
+      signaturePad.clear();
     });
+
+    // Submit the proof (photo and signature) to Google Apps Script
+    function submitProof() {
+      var trackingNumber = document.getElementById('trackingNumber').value;
+      var postcode = document.getElementById('postcode').value;
+
+      // Get the signature as a base64 string
+      var signatureData = signaturePad.toDataURL();
+
+      // Get the delivery photo file
+      var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
+      var reader = new FileReader();
+
+      reader.onloadend = function () {
+        var deliveryPhotoData = reader.result;
+
+        // Send the data to Google Apps Script via POST
+        var formData = new FormData();
+        formData.append('trackingNumber', trackingNumber);
+        formData.append('postcode', postcode);
+        formData.append('signature', signatureData);  // Base64 string
+        formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 string
+
+        // Replace with your actual Google Apps Script URL
+        var scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';  // Your deployed URL here
+
+        fetch(scriptUrl, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Proof submitted successfully:', data);
+          alert('Proof submitted successfully!');
+        })
+        .catch(error => {
+          console.error('Error submitting proof:', error);
+          alert('Error submitting proof.');
+        });
+      };
+
+      reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
+    }
   </script>
 </body>
 </html>
-
