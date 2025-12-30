@@ -147,62 +147,59 @@
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
 
   <script>
-    // Wait for the page to load before initializing the signature pad
+    // Initialize the signature pad once the library is loaded
     window.addEventListener('load', function() {
-      // Ensure SignaturePad is loaded properly
-      if (typeof SignaturePad === 'undefined') {
-        console.error("SignaturePad library is not loaded.");
-      } else {
-        // Initialize the SignaturePad when the page is fully loaded
-        var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
+      // Ensure SignaturePad is loaded
+      console.log("Page loaded and SignaturePad library is ready!");
+      const canvas = document.getElementById('signaturePad');
+      const signaturePad = new SignaturePad(canvas);
 
-        // Clear Signature Button
-        document.getElementById('clearSignature').addEventListener('click', function() {
-          signaturePad.clear();
-        });
+      // Clear the signature pad
+      document.getElementById('clearSignature').addEventListener('click', function() {
+        signaturePad.clear();
+      });
 
-        // Submit the proof (photo and signature) to Google Apps Script
-        function submitProof() {
-          var trackingNumber = document.getElementById('trackingNumber').value;
-          var postcode = document.getElementById('postcode').value;
+      // Submit the proof form
+      function submitProof() {
+        const trackingNumber = document.getElementById('trackingNumber').value;
+        const postcode = document.getElementById('postcode').value;
 
-          // Get the signature as a base64 string
-          var signatureData = signaturePad.toDataURL();
+        // Get the signature as a base64 string
+        const signatureData = signaturePad.toDataURL();
 
-          // Get the delivery photo file
-          var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
-          var reader = new FileReader();
+        // Get the delivery photo file
+        const deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
+        const reader = new FileReader();
 
-          reader.onloadend = function () {
-            var deliveryPhotoData = reader.result;
+        reader.onloadend = function () {
+          const deliveryPhotoData = reader.result;
 
-            // Send the data to Google Apps Script via POST
-            var formData = new FormData();
-            formData.append('trackingNumber', trackingNumber);
-            formData.append('postcode', postcode);
-            formData.append('signature', signatureData);  // Base64 string
-            formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 string
+          // Send data to Google Apps Script via POST request
+          const formData = new FormData();
+          formData.append('trackingNumber', trackingNumber);
+          formData.append('postcode', postcode);
+          formData.append('signature', signatureData);  // Base64 signature string
+          formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 image string
 
-            // Replace with your actual Google Apps Script URL
-            var scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
+          // Replace with your actual Google Apps Script URL
+          const scriptUrl = 'YOUR_GOOGLE_SCRIPT_URL';
 
-            fetch(scriptUrl, {
-              method: 'POST',
-              body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Proof submitted successfully:', data);
-              alert('Proof submitted successfully!');
-            })
-            .catch(error => {
-              console.error('Error submitting proof:', error);
-              alert('Error submitting proof.');
-            });
-          };
+          fetch(scriptUrl, {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Proof submitted successfully:', data);
+            alert('Proof submitted successfully!');
+          })
+          .catch(error => {
+            console.error('Error submitting proof:', error);
+            alert('Error submitting proof.');
+          });
+        };
 
-          reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
-        }
+        reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
       }
     });
   </script>
