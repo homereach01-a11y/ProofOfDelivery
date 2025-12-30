@@ -124,7 +124,7 @@
   <div class="form-container">
     <h2>Delivery Proof Capture</h2>
 
-    <form id="proofForm" onsubmit="event.preventDefault(); submitProof();">
+    <form id="proofForm">
       <label for="trackingNumber">Tracking Number:</label>
       <input type="text" id="trackingNumber" placeholder="Enter Tracking Number" required />
 
@@ -149,7 +149,6 @@
   <script>
     // Initialize the signature pad once the library is loaded
     window.addEventListener('load', function() {
-      // Ensure SignaturePad is loaded
       console.log("Page loaded and SignaturePad library is ready!");
       const canvas = document.getElementById('signaturePad');
       const signaturePad = new SignaturePad(canvas);
@@ -160,12 +159,17 @@
       });
 
       // Submit the proof form
-      function submitProof() {
+      const form = document.getElementById('proofForm');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent actual form submission
+
+        console.log("Submit button clicked!"); // Debugging line to check form submission
         const trackingNumber = document.getElementById('trackingNumber').value;
         const postcode = document.getElementById('postcode').value;
 
         // Get the signature as a base64 string
         const signatureData = signaturePad.toDataURL();
+        console.log("Signature data captured: ", signatureData); // Debugging line
 
         // Get the delivery photo file
         const deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
@@ -173,6 +177,7 @@
 
         reader.onloadend = function () {
           const deliveryPhotoData = reader.result;
+          console.log("Delivery photo data captured: ", deliveryPhotoData); // Debugging line
 
           // Send data to Google Apps Script via POST request
           const formData = new FormData();
@@ -182,13 +187,17 @@
           formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 image string
 
           // Replace with your actual Google Apps Script URL
-          const scriptUrl = 'YOUR_GOOGLE_SCRIPT_URL';
+          const scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
+          console.log("Sending data to Google Apps Script...");
 
           fetch(scriptUrl, {
             method: 'POST',
             body: formData
           })
-          .then(response => response.json())
+          .then(response => {
+            console.log("Response received from server:", response); // Debugging line
+            return response.json();
+          })
           .then(data => {
             console.log('Proof submitted successfully:', data);
             alert('Proof submitted successfully!');
@@ -200,7 +209,7 @@
         };
 
         reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
-      }
+      });
     });
   </script>
 </body>
