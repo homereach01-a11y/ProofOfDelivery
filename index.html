@@ -49,9 +49,12 @@
     <button id="clearSignature">Clear Signature</button>
   </div>
 
+  <!-- Correct inclusion of SignaturePad library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/2.3.2/signature_pad.umd.min.js"></script>
+
+  <!-- Your script to initialize and interact with the signature pad -->
   <script>
-    // Initialize the signature pad
+    // Initialize the signature pad once the library is loaded
     var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
     // Add event listeners for debugging
@@ -66,6 +69,23 @@
     document.getElementById('clearSignature').addEventListener('click', function() {
       signaturePad.clear();
       console.log("Signature cleared.");
+    });
+
+    // Check if drawing is enabled (for troubleshooting)
+    signaturePad.onTouchStart = function(event) {
+      console.log("Touch event started...");
+    };
+
+    signaturePad.onMouseDown = function(event) {
+      console.log("Mouse event started...");
+    };
+
+    // Debugging for touch and mouse
+    document.getElementById('signaturePad').addEventListener('mousedown', function(event) {
+      console.log("Mouse down detected", event);
+    });
+    document.getElementById('signaturePad').addEventListener('touchstart', function(event) {
+      console.log("Touch down detected", event);
     });
   </script>
 
