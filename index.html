@@ -6,6 +6,7 @@
   <title>Delivery Proof Capture</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
+    /* Base Styling */
     body {
       font-family: 'Roboto', sans-serif;
       background-color: #f4f8fb;
@@ -18,6 +19,8 @@
       height: 100vh;
       box-sizing: border-box;
     }
+
+    /* Header Section */
     header {
       background-color: #1e3a5f;
       color: white;
@@ -25,11 +28,14 @@
       padding: 20px 0;
       text-align: center;
     }
+
     header h1 {
       font-size: 36px;
       margin: 0;
       font-weight: 700;
     }
+
+    /* Form Styling */
     .form-container {
       background-color: white;
       width: 100%;
@@ -39,12 +45,14 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .form-container h2 {
       font-size: 28px;
       text-align: center;
       margin-bottom: 20px;
       color: #1e3a5f;
     }
+
     .form-container input,
     .form-container button {
       padding: 12px;
@@ -54,10 +62,12 @@
       border-radius: 8px;
       border: 2px solid #ddd;
     }
+
     .form-container input[type="file"] {
       padding: 8px;
       border: 2px solid #ddd;
     }
+
     .form-container button {
       background-color: #1e3a5f;
       color: white;
@@ -65,14 +75,18 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     .form-container button:hover {
       background-color: #16314d;
     }
+
     .form-container canvas {
       border: 2px solid #ddd;
       display: block;
       margin: 20px auto;
     }
+
+    /* Signature Pad and Clear Button */
     .clear-signature {
       display: inline-block;
       padding: 10px 20px;
@@ -86,9 +100,12 @@
       margin-bottom: 20px;
       transition: background-color 0.3s ease;
     }
+
     .clear-signature:hover {
       background-color: #d02e2b;
     }
+
+    /* Responsive Design */
     @media (max-width: 768px) {
       .form-container {
         padding: 20px;
@@ -98,12 +115,15 @@
 </head>
 <body>
 
+  <!-- Header Section -->
   <header>
     <h1>Capture Delivery Proof</h1>
   </header>
 
+  <!-- Driver's Form to Capture Proof -->
   <div class="form-container">
     <h2>Delivery Proof Capture</h2>
+
     <form id="proofForm" onsubmit="event.preventDefault(); submitProof();">
       <label for="trackingNumber">Tracking Number:</label>
       <input type="text" id="trackingNumber" placeholder="Enter Tracking Number" required />
@@ -118,13 +138,22 @@
       <canvas id="signaturePad" width="400" height="200"></canvas>
 
       <button type="button" class="clear-signature" id="clearSignature">Clear Signature</button>
+
       <button type="submit">Submit Proof</button>
     </form>
   </div>
 
+  <!-- Include Signature Pad Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/2.3.2/signature_pad.umd.min.js"></script>
 
   <script>
+    // Check if the SignaturePad script is loaded
+    if (typeof SignaturePad === 'undefined') {
+      console.error("SignaturePad library is not loaded.");
+    } else {
+      console.log("SignaturePad library loaded successfully.");
+    }
+
     // Initialize Signature Pad
     var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
