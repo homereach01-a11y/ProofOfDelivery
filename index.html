@@ -149,6 +149,15 @@
     // Initialize Signature Pad
     var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
+    // Debugging for signature pad interaction
+    signaturePad.onBegin = function() {
+      console.log("Started drawing...");
+    };
+    
+    signaturePad.onEnd = function() {
+      console.log("Finished drawing...");
+    };
+
     // Clear Signature Button
     document.getElementById('clearSignature').addEventListener('click', function() {
       signaturePad.clear();
@@ -161,6 +170,7 @@
 
       // Get the signature as a base64 string
       var signatureData = signaturePad.toDataURL();
+      console.log("Signature Data: ", signatureData);  // Debugging
 
       // Get the delivery photo file
       var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
@@ -168,6 +178,7 @@
 
       reader.onloadend = function () {
         var deliveryPhotoData = reader.result;
+        console.log("Delivery Photo Data: ", deliveryPhotoData);  // Debugging
 
         // Send the data to Google Apps Script via POST
         var formData = new FormData();
