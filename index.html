@@ -3,86 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signature Pad Debug</title>
+  <title>Delivery Proof Capture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Roboto', sans-serif;
       background-color: #f4f8fb;
       margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    header {
+      background-color: #1e3a5f;
+      color: white;
+      width: 100%;
+      padding: 20px 0;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 36px;
+      margin: 0;
+      font-weight: 700;
     }
     .form-container {
       background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      width: 400px;
-    }
-    canvas {
-      border: 1px solid #ddd;
       width: 100%;
-      height: 200px;
+      max-width: 600px;
+      padding: 40px;
+      margin-top: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    button {
-      margin-top: 10px;
-      padding: 10px;
+    .form-container h2 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1e3a5f;
+    }
+    .form-container input,
+    .form-container button {
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      width: 100%;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+    }
+    .form-container input[type="file"] {
+      padding: 8px;
+      border: 2px solid #ddd;
+    }
+    .form-container button {
       background-color: #1e3a5f;
       color: white;
       border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .form-container button:hover {
+      background-color: #16314d;
+    }
+    .form-container canvas {
+      border: 2px solid #ddd;
+      display: block;
+      margin: 20px auto;
+    }
+    .clear-signature {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #ff3b30;
+      color: white;
+      font-size: 16px;
+      border: none;
       border-radius: 8px;
       cursor: pointer;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: background-color 0.3s ease;
     }
-    button:hover {
-      background-color: #16314d;
+    .clear-signature:hover {
+      background-color: #d02e2b;
+    }
+    @media (max-width: 768px) {
+      .form-container {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <header>
+    <h1>Capture Delivery Proof</h1>
+  </header>
+
   <div class="form-container">
-    <h2>Signature Pad Debug</h2>
-    <canvas id="signaturePad" width="400" height="200"></canvas>
-    <button id="clearSignature">Clear Signature</button>
+    <h2>Delivery Proof Capture</h2>
+    <form id="proofForm" onsubmit="event.preventDefault(); submitProof();">
+      <label for="trackingNumber">Tracking Number:</label>
+      <input type="text" id="trackingNumber" placeholder="Enter Tracking Number" required />
+
+      <label for="postcode">Postcode:</label>
+      <input type="text" id="postcode" placeholder="Enter Postcode" required />
+
+      <label for="deliveryPhoto">Capture Delivery Photo:</label>
+      <input type="file" id="deliveryPhoto" accept="image/*" capture="camera" required />
+
+      <label for="signature">Customer Signature:</label>
+      <canvas id="signaturePad" width="400" height="200"></canvas>
+
+      <button type="button" class="clear-signature" id="clearSignature">Clear Signature</button>
+      <button type="submit">Submit Proof</button>
+    </form>
   </div>
 
-  <!-- Correct inclusion of SignaturePad library -->
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/2.3.2/signature_pad.umd.min.js"></script>
 
-  <!-- Your custom JavaScript to initialize and interact with the signature pad -->
   <script>
-    // Wait for the SignaturePad library to be fully loaded before initializing the pad
-    window.onload = function() {
-      var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
+    // Initialize Signature Pad
+    var signaturePad = new SignaturePad(document.getElementById('signaturePad'));
 
-      // Add event listeners for debugging
-      signaturePad.onBegin = function() {
-        console.log("Started drawing...");
+    // Clear Signature Button
+    document.getElementById('clearSignature').addEventListener('click', function() {
+      signaturePad.clear();
+    });
+
+    // Submit the proof (photo and signature) to Google Apps Script
+    function submitProof() {
+      var trackingNumber = document.getElementById('trackingNumber').value;
+      var postcode = document.getElementById('postcode').value;
+
+      // Get the signature as a base64 string
+      var signatureData = signaturePad.toDataURL();
+
+      // Get the delivery photo file
+      var deliveryPhoto = document.getElementById('deliveryPhoto').files[0];
+      var reader = new FileReader();
+
+      reader.onloadend = function () {
+        var deliveryPhotoData = reader.result;
+
+        // Send the data to Google Apps Script via POST
+        var formData = new FormData();
+        formData.append('trackingNumber', trackingNumber);
+        formData.append('postcode', postcode);
+        formData.append('signature', signatureData);  // Base64 string
+        formData.append('deliveryPhoto', deliveryPhotoData);  // Base64 string
+
+        // Replace with your actual Google Apps Script URL
+        var scriptUrl = 'https://script.google.com/macros/s/AKfycbyK_PAfhTZuqvxGyhiV9dewX43RgYen5KFkW312cDhROdCnkU7EMOP2zgiz2poQCJRPwA/exec';
+
+        fetch(scriptUrl, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Proof submitted successfully:', data);
+          alert('Proof submitted successfully!');
+        })
+        .catch(error => {
+          console.error('Error submitting proof:', error);
+          alert('Error submitting proof.');
+        });
       };
 
-      signaturePad.onEnd = function() {
-        console.log("Finished drawing...");
-      };
-
-      // Clear the signature pad
-      document.getElementById('clearSignature').addEventListener('click', function() {
-        signaturePad.clear();
-        console.log("Signature cleared.");
-      });
-
-      // Debugging: track touch and mouse events
-      document.getElementById('signaturePad').addEventListener('mousedown', function(event) {
-        console.log("Mouse down detected", event);
-      });
-
-      document.getElementById('signaturePad').addEventListener('touchstart', function(event) {
-        console.log("Touch down detected", event);
-      });
-    };
+      reader.readAsDataURL(deliveryPhoto);  // Convert the photo file to base64
+    }
   </script>
-
 </body>
 </html>
